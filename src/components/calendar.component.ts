@@ -1,16 +1,16 @@
-import { Component, Input, OnInit, Output, EventEmitter, forwardRef, Provider } from '@angular/core';
+import { Component, EventEmitter, forwardRef, Input, OnInit, Output, Provider } from '@angular/core';
 
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import {
-  CalendarMonth,
-  CalendarModalOptions,
-  CalendarComponentOptions,
-  CalendarDay,
-  CalendarComponentPayloadTypes,
   CalendarComponentMonthChange,
+  CalendarComponentOptions,
+  CalendarComponentPayloadTypes,
   CalendarComponentTypeProperty,
+  CalendarDay,
+  CalendarModalOptions,
+  CalendarMonth,
 } from '../calendar.model';
 import { CalendarService } from '../services/calendar.service';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import * as moment from 'moment';
 import { defaults, pickModes } from '../config';
@@ -187,9 +187,11 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
   }
 
   nextMonth(): void {
-    const nextTime = moment(this.monthOpt.original.time)
-      .add(1, 'months')
-      .valueOf();
+    // GPW-15236 FIX: Margem de segurança de 12h para que a navegação entre meses 
+    // permaneça no mês correto, mesmo em transições de horário de verão.
+    const currentMoment = moment(this.monthOpt.original.time).startOf('month');
+    const nextTime = currentMoment.add(1, 'months').set({ hour: 12 }).valueOf();
+    
     this.monthChange.emit({
       oldMonth: this.calSvc.multiFormat(this.monthOpt.original.time),
       newMonth: this.calSvc.multiFormat(nextTime),
