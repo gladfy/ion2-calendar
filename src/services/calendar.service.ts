@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 import * as moment from 'moment';
 
 import {
-  CalendarOriginal,
   CalendarDay,
-  CalendarMonth,
   CalendarModalOptions,
+  CalendarMonth,
+  CalendarOriginal,
   CalendarResult,
   DayConfig,
 } from '../calendar.model';
@@ -218,9 +218,9 @@ export class CalendarService {
     let _startMonth = new Date(_start.getFullYear(), _start.getMonth(), 1).getTime();
 
     for (let i = 0; i < monthsNum; i++) {
-      let time = moment(_startMonth)
-        .add(i, 'M')
-        .valueOf();
+      // GPW-15236 FIX: Evita que o recuo de 1h do fuso (DST) em Outubro/2026 
+      // jogue a data para o dia 31 do mês anterior.
+      let time = moment(_startMonth).add(i, 'M').set({ hour: 12, minute: 0 }).valueOf();
       let originalCalendar = this.createOriginalCalendar(time);
       _array.push(this.createCalendarMonth(originalCalendar, opt));
     }
